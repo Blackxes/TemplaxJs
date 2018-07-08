@@ -546,7 +546,7 @@ var RequestParser = new class RequestParserClass {
 
 		// Todo: finish "debug" command implementation!
 		let response = new ClassSet.response( query.rawRule, "no data found", false );
-
+		
 		response.value = "Currently not implemented!";
 
 		return response;
@@ -1224,7 +1224,7 @@ performTests = function( ...givenTests ) {
 //_____________________________________________________________________________________________
 document.addEventListener("DOMContentLoaded", function() {
 
-	let templax = require( "../src/Templax.js" ).app;
+	// let templax = require( "../src/Templax.js" ).app;
 
 	// define test template
 	performTests( 8 );

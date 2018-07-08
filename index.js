@@ -1,1 +1,1 @@
-module.exports = require("./src/index.js").app;
+module.exports.app = require("./src/index.js").app;
