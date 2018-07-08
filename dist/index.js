@@ -1,937 +1,721 @@
-(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
-//_____________________________________________________________________________________________
-/**********************************************************************************************
-
-	contains several container classes
-
-	@Author: Alexander Bassov
-	@Email: blackxes@gmx.de
-	@Github: https://www.github.com/Blackxes
-
-/*********************************************************************************************/
-
-// includes
-var Parser = require( "./HTMLParser.js" );
-var Config = require( "./Configuration.js" );
-
-//_____________________________________________________________________________________________
-// contains information about a general template process
-exports.tprocess = class TemplateProcessClass {
-
-	//_________________________________________________________________________________________
-	constructor( id, template, userMarkup, isSubProcess ) {
-
-		this.id = id || null;
-		this.template = template || null;
-		this.userMarkup = userMarkup || null;
-		this.baseMarkup = null;
-		this.currentQuery = null;
-		this.isSubProcess = isSubProcess || false;
-
-		this.options = Object.assign({}, Config.parsing.optionSets.templateProcess );
-	}
-
-	//_________________________________________________________________________________________
-	//
-	
-};
-
-//_____________________________________________________________________________________________
-// contains information about a template
-exports.template = class TemplateClass {
-
-	//_________________________________________________________________________________________
-	constructor( id, value, options ) {
-
-		this.id = ( id && id.constructor === String ) ? id : "";
-		this._value = ( value || typeof value === "string" ) ? value : "";
-		this.options = options || {};
-	}
-
-	//_________________________________________________________________________________________
-	//
-	get value() {
-		
-		if ( !this._value && this.id )
-			return Parser.parser.getTemplate( this.id )._value;
-
-		return this._value || "";
-	}
-
-	//_________________________________________________________________________________________
-	//
-
-};
-
-//_____________________________________________________________________________________________
-// contains information about the rule
-exports.rule = class RuleClass {
-
-	//_________________________________________________________________________________________
-	constructor( id, rule, request, key, value, options ) {
-
-		this.id = id;
-		this.rule = rule || null;
-		this.request = request || null;
-		this.key = key || null
-		this.value = value || null;
-		this.options = options || null;
-	}
-
-	//_________________________________________________________________________________________
-	//
-
-}; 
-
-//_____________________________________________________________________________________________
-// contains information about the current processing template and its request
-exports.query = class QueryClass extends exports.rule {
-
-	//_________________________________________________________________________________________
-	constructor( processId, rule, template, isPostQuery = false) {
-
-		super( rule.id, rule.rule, rule.request, rule.key, rule.value, rule.options );
-		
-		this.processId = processId;
-		this.template = template || null;
-		this.isPostQuery = isPostQuery || false;
-	}
-
-	//_________________________________________________________________________________________
-	//
-
-};
-
-//_____________________________________________________________________________________________
-// contains the final information about the string
-// thats being replaced with the assossiated value
-//
-exports.processResponse = class ProcessResponseClass {
-
-	//_________________________________________________________________________________________
-	constructor( replacement, value, postQuery, indexOffSet ) {
-
-		this.replacement = replacement || "";
-		this.value = value || "";
-		this.postQuery = (postQuery !== undefined) ? postQuery : null;
-		this.indexOffSet = (indexOffSet != undefined) ? indexOffSet : null;
-
-		if ( this.postQuery )
-			this.postQuery.isPostQuery = true;
-	}
-
-	//_________________________________________________________________________________________
-	//
-
-};
-
-//_____________________________________________________________________________________________
-// templates for debugging purposes
-//
-class TemplatesClass {
-
-	//_________________________________________________________________________________________
-	constructor() {
-		this.templates = {};
-
-		this.templates["hp_debug_messages"] = this.hp_debug_messages();
-	}
-
-	//_________________________________________________________________________________________
-	// prints out debugging messages
-	hp_debug_messages() {
-		return `
-			<div class="hp-debug-messages">
-			{{ foreach: hp_debug_messages }}
-				<p>{{ message }}</p>
-			{{ foreach end: hp_debug_messages }}
-			</div>
-		`;
-	}
-
-	//_________________________________________________________________________________________
-	//
-
-}
-exports.templates = (new TemplatesClass()).templates;
-
-//_____________________________________________________________________________________________
-//
-},{"./Configuration.js":2,"./HTMLParser.js":3}],2:[function(require,module,exports){
-//_____________________________________________________________________________________________
-/**********************************************************************************************
-
-	defaults and configuration
-
-	@Author: Alexander Bassov
-	@Email: blackxes@gmx.de
-	@Github: https://www.github.com/Blackxes
-
-/*********************************************************************************************/
-
-/* jshint -W084 */
-
-// includes
-// general configuration
-exports.general = {};
-
-exports.general.systemPrefix = "hp_";
-
-//_____________________________________________________________________________________________
-// regex for extracting and filtering
-exports.regex = {};
-
-// matches a rule within a template
-exports.regex.extractRule = function() { return new RegExp("{{([^<>]*?)}}", "g"); };
-
-// rule filtering regex / extract the request, key and the options string
-exports.regex.extractRequest = function() { return new RegExp("([\\w-]+)(?:[\\w\\s:-]+)?", "g"); }
-exports.regex.extractKey = function() { return new RegExp("{{\\s*(?:[\\w-]+)\\s*:\\s*([\\w-]+)(?:[\\w\\s:-]+)?", "g"); }
-// exports.regex.extractOptionsString = function() { return new RegExp("\\w+(?::\\w+)?\\s+(\\w+[\\s\\w+-:]+)", "g"); }
-
-// extracts single options from the option part within the rule
-// exports.regex.extractOption = () => { return new RegExp("\\s*([\\w-]+)\\s*:\\s*([\\w-]+)\\s*", "g"); };
-
-// extract a substring based on the given rule
-// build based on the given rule to extract area
-exports.regex.extractArea = function( query, id ) { return new RegExp( `${query.rule}(.*?){{\\s*${query.request}\\s+end\\s*:\\s*${id}\\s*}}`, "g" ); };
-
-//_____________________________________________________________________________________________
-// debugging configuration
-exports.debug = {};
-
-// display messages in general
-exports.debug.display = true;
-
-// display trace
-exports.debug.display_trace = true;
-
-//_____________________________________________________________________________________________
-// rule parsing configuration
-exports.parsing = {};
-
-// contains the default option set for a rule
-// Idea: maybe required attribute to each option value?
-//
-exports.parsing.optionSets = {
-	"default": {
-		"render": true,
-		"wrap": "|",
-	},
-	"templateProcess": {
-		"processRuleCounter": true,
-		"wrapContent": true,
-	},
-	"templateInline": {
-		"renderInline": false
-	}
-};
-
-//_____________________________________________________________________________________________
-// debugging stuff when working with the library
-// Todo: implement debuggin usage
-// exports.config.debug = {};
-
-// displays every invalid value within the template
-// exports.config.debug.displayInvalidValues = true;
-// exports.config.debug.displayInvalidValuesAttributes = {
-// 	"request": true,
-// 	"operator": true,
-// 	"key": true,
-// 	"template": true,
-// 	"value": true
-// };
-
-//_____________________________________________________________________________________________
-//
-
-},{}],3:[function(require,module,exports){
-//_____________________________________________________________________________________________
-/**********************************************************************************************
-
-	html template parsing class
-
-	@Author: Alexander Bassov
-	@Email: blackxes@gmx.de
-	@Github: https://www.github.com/Blackxes
-
-/*********************************************************************************************/
-
-/* jshint -W084 */
-
-// includes
-var Config = require( "./Configuration.js" );
-var RequestParser = require( "./RequestParser.js" );
-var RuleParser = require( "./RuleParser.js" );
-var Classes = require( "./Classes.js" );
-
-//_____________________________________________________________________________________________
-var HTMLParser = new class HTMLParserClass {
-
-	//_________________________________________________________________________________________
-	constructor() {
-
-		this.templates = new Map;
-		this.tprocesses = new Set;
-
-		// this._loadTemplates();
-		
-		this.ruleCounter = 0;
-		this.processCounter = 0;
-	}
-
-	//_________________________________________________________________________________________
-	// parses a template
-	//
-	// param1 (string) expects the template id
-	// param2 (object) expects the markup of the template
-	// param3 (object) expects template options
-	//
-	// return undefined
-	//
-	parse( id, markup, options, displayParsingTime = true ) {
-
-		if ( !this.templates.has(id) || options && options["render"] )
-			return undefined;
-
-		let template = id;
-
-		if ( !templateDefinition || markup && markup.constructor !== Object )
-			return "";
-
-		// let template = "";
-
-		template = ( templateDefinition instanceof Classes.template )
-			? templateDefinition
-			: this.getTemplate( templateDefinition );
-		
-		let start = Date.now();
-		let content = this._parse( template, markup );
-		let end = Date.now();
-
-		if ( displayParsingTime )
-			console.log( "HTParser: parsing took %sms", (end - start) );
-
-		return content;
-	}
-
-	//_________________________________________________________________________________________
-	// actual template parsing
-	//
-	// param1 (TemplateClass) expects the template object
-	// param2 (object) expects the object
-	//
-	_parse( template, markup, options ) {
-
-		let content = this._processTemplate( template, markup, function( query ) {
-
-			// use processing functions to get response
-			let response = RequestProcessor.requestProcessor.processRequest( query );
-			return response;
-
-		}, null, options );
-
-		return content;
-	}
-
-	//_________________________________________________________________________________________
-	// queries through the given template and executes the rule extraction regex onto it
-	// builds the querry for the matched rule and builds, based on the returned response
-	// of the callback, the content.
-
-	_processTemplate( template, markup, _callback, _this, options = {} ) {
-
-		// register current template process
-		let tProcess = this._createTProcess( template, markup );
-		tProcess.options = Object.assign({}, tProcess.options, options);
-
-		// constant values / they are used not changed
-		let regExtractRule = Config.regex.extractRule();
-		let callback = ( _callback && _callback.constructor == Function ) ? _callback.bind( _this || this ) : () => null;
-		tProcess.baseMarkup = this._buildBaseMarkup( tProcess );
-
-		// values that being ressigned while processing
-		let rawRule = null;
-		let content = template.value;
-		let oldLastIndex = regExtractRule.lastIndex;
-		let postQuerries = [];
-
-		while ( rawRule = regExtractRule.exec(content) ) {
-			
-			let rule = this._buildRule( tProcess, rawRule[0] );
-			let query = new Classes.query( tProcess.id, rule, content.substring(oldLastIndex), false );
-			tProcess.currentQuery = query;
-
-			console.log(query);
-
-			// get and review response / the rule is used to build a default response
-			let response = this._reviewProcessResponse( tProcess, callback( query ) );
-
-			// track post queries
-			if ( response.postQuery )
-				postQuerries.push( response.postQuery );
-			
-			// adjust last index to avoid unecessary regex execution and fails when searching for rules
-			// replacements smaller than the rule itself in length result in missing rules
-			// written directly after the rule
-			regExtractRule.lastIndex += (response.indexOffSet !== null)
-				? Number(response.indexOffSet)
-				: -(query.rule.length - response.value.length);
-
-			// the last index is needed to create a substring from the content
-			// to speed up the processing when the processing functions query inner rules
-			oldLastIndex = regExtractRule.lastIndex;
-
-			// !! THE HEART LINE of this framework !! YEAAAAAH !!
-			// - and the one in the post query post processing
-			//
-			// finally replacing the content with its value
-			// for semantic reason this has to happen after the index got adjusted
-			// console.log(response);
-			content = content.replace( response.replacement, query.options.wrap.replace( "|", response.value ) );
-		}
-
-		// process post queries
-		postQuerries.forEach( (postQuery) => {
-
-			let response = callback( postQuery );
-			content = content.replace( response.replacement, response.value );
-		});
-
-		// delete process
-		this._deleteTProcess( tProcess.id );
-
-		return content;
-	}
-
-	//_________________________________________________________________________________________
-	// builds the base markup for the processing template
-	//
-	// param1 (TemplateProcessClass) expects the template process instance
-	//
-	// return Object
-	//
-	_buildBaseMarkup( tProcess ) {
-
-		if ( !tProcess || !(tProcess instanceof Classes.tprocess) )
-			return {};
-
-		let base = {};
-
-		// Todo: implement relation to parent templates when a subprocess
-		base[Config.general.systemPrefix + "templateId"] = tProcess.template.id || (tProcess.isSubProcess)
-			? tProcess.template.id
-			: "Undefined template id";
-
-		return base;
-	}
-
-	//_________________________________________________________________________________________
-	// builds the rule object for further processing
-	//
-	// param2 (TemplateProcessClass) expects the process instance
-	// param2 (String) expects the raw rule
-	//
-	// return RuleClass
-	//
-	_buildRule( tProcess, rawRule ) {
-		
-		// build base rule
-		let request = this._extractRulePiece( rawRule, Config.regex.extractRequest() ) || null;
-		let key = this._extractRulePiece( rawRule, Config.regex.extractKey() ) || null;
-
-		let options = Object.assign( {},
-			Config.parsing.optionSets.default,
-			Config.parsing.optionSets[ request ] || {}
-		);
-		let rule = new Classes.rule( (tProcess.options.processRuleCounter) ? ruleIdCounter++ : ruleIdCounter, rawRule, request, key, null, options );
-
-		// the prio key is the value that defines the key of the markup
-		// marker are referenced with there name in the markup
-		// but the value for commands such as "template" or "foreach" are found under the key in the markup
-		// therefor a priority key is needed to identify the corrent value from the markup
-		let prioKey = key || request;
-		let markup = Object.assign( {}, tProcess.baseMarkup, this._buildRuleMarkup( rule ), tProcess.userMarkup );
-
-		// apply markup configurations
-		let markupConfig = this._applyMarkupConfigOnRuleConfig( rule, markup[prioKey] );
-		rule.options = markupConfig.options;
-		rule.value = markupConfig.value;
-
-		return rule;
-	}
-
-	//_________________________________________________________________________________________
-	// applies the configuration of the markup onto the ones defined in the rule
-	//
-	// param1 (RuleClass) expects the rule instance
-	// param2 (mixed) expects the configuration
-	//
-	// return Object
-	//
-	_applyMarkupConfigOnRuleConfig( rule, config ) {
-		
-		let processedConfig = { "value": null, "options": Object.assign({}, rule.options) };
-
-		if ( !rule || !config )
-			return processedConfig;
-		
-		if ( config.constructor === String )
-			processedConfig.value = config;
-
-		else if ( config.constructor === Function )
-			processedConfig.value = config();
-		
-		else if ( config.constructor === Object ) {
-			
-			if ( config["value"] )
-				processedConfig.value = (config.value.constructor === Function) ? config.value() : config.value;
-			else
-				processedConfig.value = config;
-			
-			if ( config["options"] )
-				processedConfig.options = Object.assign( processedConfig.options, this._processOptions(config.options) );
-		}
-
-		else
-			processedConfig.value = config;
-		
-		return processedConfig;
-	}
-
-	//_________________________________________________________________________________________
-	// process options values / simple checks when the option value is a function
-	// and overwrites the value with the returned value from the function
-	//
-	// param1 (Object) expects the options object
-	//
-	// return Object
-	//
-	_processOptions( options ) {
-
-		if ( !options || options.constructor !== Object || !Object.keys(options).length )
-			return {};
-
-		for ( let option in options )
-			if ( options[option] && options[option].constructor === Function )
-				options[option] = options[option]();
-		
-		return options;
-	}
-
-	//_________________________________________________________________________________________
-	// returns a markup based on the given rule
-	//
-	// param1 (RuleInstance) expects the process instance
-	//
-	// return Object
-	//
-	_buildRuleMarkup( rule ) {
-
-		if ( !rule || !(rule instanceof Classes.rule) )
-			return {};
-
-		let markup = {
-			[`${Config.general.systemPrefix}hp_rule`]: rule.rule,
-			[`${Config.general.systemPrefix}hp_request`]: rule.request,
-			[`${Config.general.systemPrefix}hp_key`]: rule.key || ""
-		};
-		
-		for ( let i in rule.options ) {
-			markup[`${Config.general.systemPrefix}hp_option_${i}`] = rule.options[i];
-		}
-
-		return markup;
-	}
-
-	//_________________________________________________________________________________________
-	// gets the request value as "value" and "options" object by the markup and rule
-	//
-	// param1 (string) expects the prioirity key of the rule
-	// param2 (Object) expects the markup value
-	//
-	// return Object
-	//
-	_getRequestValue( prioKey, markup ) {
-
-		let config = { "value": null, "options": {} };
-		let value = markup[ prioKey ];
-
-		if ( !value )
-			return config;
-		
-		if ( value.constructor === String )
-			config.value = value;
-		
-		else if ( value.constructor === Object ) {
-			config.value = value["value"] || null;
-			config.options = this._processOptions(value["options"]);
-		}
-
-		return config;
-	}	
-
-	//_________________________________________________________________________________________
-	// extracts a value from a string with a given regex
-	// a valid result will be qued through the possible matched groups and passed
-	// to the callback and collected in an array that will be returned
-	// when no callback is provided it returns either the first group
-	// the raw match or an empty string
-	//
-	// param1 (string) expects the search string
-	// param2 (RegExp) expects the regex
-	// param3 (Function) (optional) expects a callback function
-	//
-	// return array
-	//
-	_extractRulePiece( source, regex, callback = null ) {
-		
-		let match = regex.exec( source );
-
-		if ( !match )
-			return null;
-		
-		if ( callback && callback.constructor === Function ) {
-
-			let results = [];
-
-			for ( let i = 1;; i++ ) {
-				if ( !match[i] )
-					break;
-				results.push( callback(match[i]) );
+"use strict";
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+(function () {
+	function r(e, n, t) {
+		function o(i, f) {
+			if (!n[i]) {
+				if (!e[i]) {
+					var c = "function" == typeof require && require;if (!f && c) return c(i, !0);if (u) return u(i, !0);var a = new Error("Cannot find module '" + i + "'");throw a.code = "MODULE_NOT_FOUND", a;
+				}var p = n[i] = { exports: {} };e[i][0].call(p.exports, function (r) {
+					var n = e[i][1][r];return o(n || r);
+				}, p, p.exports, r, e, n, t);
+			}return n[i].exports;
+		}for (var u = "function" == typeof require && require, i = 0; i < t.length; i++) {
+			o(t[i]);
+		}return o;
+	}return r;
+})()({ 1: [function (require, module, exports) {
+		var Config = require("./Configuration.js");
+
+		var ProcessClass = function () {
+			function ProcessClass(id, template, userMarkup, options) {
+				var parentProcess = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : null;
+
+				_classCallCheck(this, ProcessClass);
+
+				this.id = id || null;
+				this.template = template || null;
+				this.userMarkup = userMarkup || {};
+				this.queryMarkup = {};
+				this.options = Object.assign({}, Config.parsing.optionSets.templateProcess, options);
+				this.currentQuery = null;
+
+				this.parentProcess = parentProcess;
 			}
-			return results;
-		}
-		
-		return match[1] || match[0] || "";
-	}
 
-	//_________________________________________________________________________________________
-	// checks the given response and corrects it if necessary
-	//
-	// param1 (ProcessResponse) expects the response instance
-	// param2 (RuleClass) expects the processing rule instance
-	//
-	// return ProcessResponse
-	//
-	_reviewProcessResponse( tProcess, response ) {
+			_createClass(ProcessClass, [{
+				key: "isSubProcess",
+				get: function get() {
+					return Boolean(this.parentProcess);
+				}
+			}]);
 
-		if ( !response || !(response instanceof Classes.processResponse) )
-			return new Classes.processResponse( tProcess.currentQuery.rule, "", false );
-		
-		if ( !response.replacement || response.replacement.constructor !== String )
-			response.replacement = rule.rule;
-		
-		if ( !response.value || response.value.constructor !== String && response.value.constructor !== Function )
-			response.value = String(response.value);
+			return ProcessClass;
+		}();
 
-		return response;
-	}
+		;
+		exports.process = ProcessClass;
 
-	//_________________________________________________________________________________________
-	// creates a new template process
-	//
-	// param1 (TemplateClass) expects the template instance
-	//
-	// return undefined | null | >0 Number
-	//
-	_createTProcess( template, markup ) {
+		var TemplateClass = function () {
+			function TemplateClass(id, value, options) {
+				var parentTemplate = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
 
-		if ( !(template instanceof Classes.template) )
-			return undefined;
-		
-		if ( this._hasTProcess(template.id) )
-			return null;
-		
-		let freshId = this._getFreeTProcessId();
-		this.tprocesses[freshId] = new Classes.tprocess( freshId, template, markup, Boolean(template.id) );
+				_classCallCheck(this, TemplateClass);
 
-		return this._getTProcess( freshId );
-	}
+				this.id = id || null;
+				this.value = value || null;
+				this.options = options || {};
+				this.parentTemplate = parentTemplate;
+			}
 
-	//_________________________________________________________________________________________
-	// deletes a template process
-	_deleteTProcess( processId ) {
+			_createClass(TemplateClass, [{
+				key: "tid",
+				get: function get() {
+					if (!this.id) return this.parentTemplate.tid;
+					return this.id;
+				}
+			}, {
+				key: "valid",
+				get: function get() {
+					return Boolean(this.id || !this.id && this.parentTemplate);
+				}
+			}]);
 
-		if ( !this._getTProcess(processId) )
-			return null;
-		
-		delete this.tprocesses[processId];
+			return TemplateClass;
+		}();
 
-		return Boolean( this._getTProcess(processId) );
-	}
+		;
+		exports.template = TemplateClass;
 
-	//_________________________________________________________________________________________
-	// returns the existance of a process as a boolean
-	_hasTProcess( processId ) {
-		return Boolean( this.tprocesses[processId] );
-	}
+		var RuleClass = function RuleClass(id, rawRule, request, key, value, commandValue, options) {
+			_classCallCheck(this, RuleClass);
 
-	//_________________________________________________________________________________________
-	// returns a template process
-	_getTProcess( processId ) {
-		return this.tprocesses[processId];
-	}
+			this.id = id;
+			this.rawRule = rawRule || null;
+			this.request = request || null;
+			this.key = key || null;
+			this.value = value || null;
+			this.commandValue = commandValue || null;
+			this.options = options || null;
+		};
 
-	//_________________________________________________________________________________________
-	// returns a usable unique process id
-	_getFreeTProcessId() {
+		;
+		exports.rule = RuleClass;
 
-		let id = ++Object.values(this.tprocesses).length;
-		while ( this.tprocesses[this.tprocesses.length] )
-			id++;
+		var QueryClass = function (_exports$rule) {
+			_inherits(QueryClass, _exports$rule);
 
-		return id;
-	}
+			function QueryClass(process, rule, template, isPostQuery) {
+				_classCallCheck(this, QueryClass);
 
-	//_________________________________________________________________________________________
-	// defines either the full options of a template or a specific option
-	//
-	// param1 (String) expects the template id
-	// param2 (String|Object) expects either the options object or the option key
-	// param3 (mixed) expects the value for a option / only used when param2 is a string
-	//
-	// return Boolean
-	//
-	setTemplateOptions( templateId, definition, value ) {
+				var _this2 = _possibleConstructorReturn(this, (QueryClass.__proto__ || Object.getPrototypeOf(QueryClass)).call(this, rule.id, rule.rawRule, rule.request, rule.key, rule.value, rule.commandValue, rule.options));
 
-		if ( !this.hasTemplate(templateId) )
-			return false;
-		
-		if ( !definition && !value )
-			this.getTemplate( templateId ).options = {};
-		
-		else if ( definition.constructor === Object )
-			this.getTemplate( templateId ).options = definition;
+				_this2.process = process;
+				_this2.template = template || null;
+				_this2.isPostQuery = isPostQuery || false;
+				return _this2;
+			}
 
-		else if ( definition.constructor === String )
-			this.getTemplate( templateId ).options[definition] = value;
-		
-		else
-			return false;
-		
-		return true;
-	}
-	
-	//_________________________________________________________________________________________
-	// returns a template
-	//
-	// param1 (String) expects the template id
-	//
-	// return null | TemplateClass
-	//
-	getTemplate( templateId, includeCoreTemplates = false) {
+			return QueryClass;
+		}(exports.rule);
 
-		// core templates are left out
-		if ( !this.templates[templateId] || !includeCoreTemplates && !templateId.indexOf(Config.general.systemPrefix) )
-			return null;
+		;
+		exports.query = QueryClass;
 
-		return this.templates[templateId];
-	}
+		var ResponseClass = function ResponseClass(replacement, value, postQuery) {
+			var offset = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
 
-	//_________________________________________________________________________________________
-	// returns every registered templates except the core ones
-	//
-	// return object - key:id value:template instance
-	//
-	getTemplates( includeCoreTemplates = false ) {
+			_classCallCheck(this, ResponseClass);
 
-		let templates = {};
+			this.replacement = replacement || "";
+			this.value = value || "";
+			this.postQuery = postQuery || null;
+			this.offset = offset !== undefined ? offset : null;
 
-		for( let i in this.templates )
-			if ( !includeCoreTemplates && i.indexOf(Config.general.systemPrefix) )
-				templates[i] = this.templates[i];
-		
-		return templates;
-	}
+			if (this.postQuery) this.postQuery.isPostQuery = true;
+		};
 
-	//_________________________________________________________________________________________
-	// returns the existance of a template
-	//
-	// return boolean
-	//
-	hasTemplate( templateId ) {
-		return Boolean(this.templates[templateId]);
-	}
+		;
+		exports.response = ResponseClass;
+	}, { "./Configuration.js": 2 }], 2: [function (require, module, exports) {
+		exports.general = {};
 
-	//_________________________________________________________________________________________
-	//
+		exports.defaults = {};
 
-}();
-exports.parser = HTMLParser;
+		exports.regex = {};
 
-//_____________________________________________________________________________________________
-//
-},{"./Classes.js":1,"./Configuration.js":2,"./RequestParser.js":4,"./RuleParser.js":5}],4:[function(require,module,exports){
-//_____________________________________________________________________________________________
-/**********************************************************************************************
+		exports.regex.extractRule = function () {
+			return new RegExp("{{([^<>]*?)}}", "g");
+		};
 
-	contains processing functions of the template library
+		exports.regex.extractRequest = function () {
+			return new RegExp("([\\w-]+)(?:[\\w\\s:-]+)?", "g");
+		};
+		exports.regex.extractKey = function () {
+			return new RegExp("{{\\s*(?:[\\w-]+)\\s*:\\s*([\\w-]+)(?:[\\w\\s:-]+)?", "g");
+		};
 
-	@Author: Alexander Bassov
-	@Email: blackxes@gmx.de
-	@Github: https://www.github.com/Blackxes
+		exports.regex.extractArea = function (query, id) {
+			return new RegExp(query.rawRule + "(.*?){{\\s*" + query.request + "\\s+end\\s*:\\s*" + id + "\\s*}}", "g");
+		};
 
-/*********************************************************************************************/
+		exports.debug = {};
 
-/* jshint -W084 */
+		exports.debug.display = true;
 
-// includes
-var Config = require("./Configuration.js");
-var Parser = require("./HTMLParser.js");
-var Classes = require("./Classes.js");
+		exports.debug.display_trace = true;
 
-//_____________________________________________________________________________________________
-var RequestProcessor = class RequestProcessorClass {
+		exports.parsing = {};
 
-	//_________________________________________________________________________________________
-	constructor() {}
+		exports.parsing.optionSets = {
+			"default": {
+				"render": true,
+				"wrap": "|"
+			},
+			"template": {
+				"processRuleCounter": true,
+				"wrapContent": true
+			},
+			"templateInline": {
+				"renderInline": false
+			}
+		};
 
-	//_________________________________________________________________________________________
-	// processes the given query based on the request
-	//
-	// param1 (QueryClass) expects the query instance
-	//
-	// return null | ProcessResponseClass
-	//
-	processRequest( query ) {
+		exports.defaults.templateOptionSet = {
+			"render": true
+		};
+	}, {}], 3: [function (require, module, exports) {
 
-		if ( String(query.options.render).toLowerCase() == "false" )
-			return new Classes.processResponse( query.rule, null, false );
-		
-		// wether to check if the request function exists
-		// its more common that a marker is given which just needs to be replaced by its value
-		else if ( !(query.request in this) )
-			return new Classes.processResponse(query.rule, query.value, false)
-		
-		return this[ query.request ]( query );
-	}
+		var ClassSet = require("./ClassSet.js");
 
-	//_________________________________________________________________________________________
-	// replaces current scope with the result of another template
-	//
-	// param1 (QueryClass) expects the query instance
-	//
-	// return null | ProcessResponseClass
-	//
-	template( query ) {
-		
-		if ( !query.key )
-			return null;
-		
-		// try to requery at a later state but not when its already a post query
-		if ( !Parser.parser.hasTemplate(query.key) )
-			return new Classes.processResponse( query.rule, (!query.isPostQuery) ? query.rule : "", (!query.isPostQuery) ? query : false, 0 );
-		
-		let response = new Classes.processResponse( query.rule, null, false );
-		let content = Parser.parser.parse( query.key, query.value, false );
+		var ProcessManager = new (function () {
+			function ProcessManagerClass() {
+				_classCallCheck(this, ProcessManagerClass);
 
-		response.value = content;
+				this.processes = new Map();
+				this.processIterator = 0;
+			}
 
-		return response;
-	}
+			_createClass(ProcessManagerClass, [{
+				key: "create",
+				value: function create(template) {
+					var markup = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+					var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+					var parentProcess = arguments[3];
 
-	//_________________________________________________________________________________________
-	// extract the inline defined template from the given template an stores it
-	// as a separat template with the given id / when the template already exists
-	// a warning is displayed in the console
-	//
-	// param1 (QueryClass) expects the query instance
-	//
-	// return ProcessResponseClass
-	//
-	templateInline( query ) {
 
-		// Todo: implement displayment of invalid key definition
-		if ( !query.key )
-			return null;
+					if (!(template instanceof ClassSet.template)) return false;
 
-		let response = new Classes.processResponse( query.rule, "", false );
-		let templateMatch = Config.regex.extractArea( query, query.key ).exec( query.template );
+					var process = new ClassSet.process(++this.processIterator, template, markup, options, parentProcess);
+					this.processes.set(process.id, process);
 
-		// Todo: implement displayment of not found inline template definition
-		if ( !templateMatch )
-			return response;
-		
-		// Todo: implement displayment of unsuccessful registered inline defined template
-		if ( !Parser.parser.registerTemplate(query.key, templateMatch[1]) )
-			return response;
-		
-		response.replacement = templateMatch[0];
-		
-		if ( query.options.renderInline )
-			response.value =  Parser.parser.parse( query.key, query.value );
+					return this.get(process.id);
+				}
+			}, {
+				key: "delete",
+				value: function _delete(value) {
 
-		return response;
-	}
+					if (!value) return false;
 
-	//_________________________________________________________________________________________
-	// extracts the content surrounded by the foreach rule and repeats it
-	// with the given configuration defined in the markup by the key
-	//
-	// param1 (QueryClass) expects the query instance
-	//
-	// return ProcessResponseClass
-	//
-	foreach( query ) {
+					if (value instanceof ClassSet.process) return this.processes.delete(value.id);
 
-		// Todo: implement displayment of invalid key definition
-		// or invalid markup definition
-		if ( !query.key || !query.value || query.value && query.value.constructor !== Array )
-			return null;
+					return this.processes.delete(id);
+				}
+			}, {
+				key: "has",
+				value: function has(value) {
 
-		let response = new Classes.processResponse( query.rule, "", false );
-		let foreachMatch = Config.regex.extractArea( query, query.key ).exec( query.template );
+					if (value instanceof ClassSet.query) return this.processes.has(value.processId);
+					return this.processes.has(value);
+				}
+			}, {
+				key: "get",
+				value: function get(value) {
+					if (value instanceof ClassSet.query) return this.processes.get(value.processId);
+					return this.processes.get(value);
+				}
+			}, {
+				key: "validate",
+				value: function validate(value) {
 
-		// Todo: implement displayment of undefined or invalid definition of the foreach command
-		if ( !foreachMatch )
-			return response;
-		
-		response.replacement = foreachMatch[0];
-		let template = foreachMatch[1];
-		let content = "";
-		
-		query.value.forEach( (currentMarkup) => {
-			content += Parser.parser.parse( new Classes.template( null, template ), currentMarkup, false );
-		});
+					var process = value && value instanceof ClassSet.process ? value : this.get(value);
 
-		response.value = content;
+					return !(!process || !process.id || !process.template || !(process.template instanceof ClassSet.template));
+				}
+			}]);
 
-		return response;
-	}
+			return ProcessManagerClass;
+		}())();
+		exports.processManager = ProcessManager;
+	}, { "./ClassSet.js": 1 }], 4: [function (require, module, exports) {
+		var Config = require("./Configuration.js");
+		var ClassSet = require("./ClassSet.js");
+		var Templax = require("./Templax.js");
 
-	//_________________________________________________________________________________________
-	// prints out information about a markup configuration and the current template process
-	//
-	// param1 (QueryClass) expects the query instance
-	//
-	// return ProcessResponseClass
-	//
-	debug( query ) {
+		var RequestParser = new (function () {
+			function RequestParserClass() {
+				_classCallCheck(this, RequestParserClass);
 
-		// Todo: finish "debug" command implementation!
-		let response = new Classes.processResponse( query.rule, "no data found", false );
+				this.pManager = require("./ProcessManager.js").processManager;
+				this.tManager = require("./TemplateManager.js").templateManager;
+				this.requestIterator = 0;
+			}
 
-		response.value = "Currently not implemented!";
+			_createClass(RequestParserClass, [{
+				key: "parse",
+				value: function parse(query) {
 
-		return response;
-	}
+					this.requestIterator++;
 
-	//_________________________________________________________________________________________
-	//
+					if (String(query.options.render) === "false") return new ClassSet.response(query.rawRule, null, false);else if (!(query.request in this)) return new ClassSet.response(query.rawRule, query.value, false);
 
-};
-exports.requestProcessor = RequestProcessor;
+					return this[query.request](query);
+				}
+			}, {
+				key: "template",
+				value: function template(query) {
 
-//_____________________________________________________________________________________________
-//
+					if (!query.key) return null;
 
-},{"./Classes.js":1,"./Configuration.js":2,"./HTMLParser.js":3}],5:[function(require,module,exports){
+					if (!this.tManager.has(query.key)) return new ClassSet.response(query.rawRule, !query.isPostQuery ? query.rawRule : "", !query.isPostQuery ? query : false, 0);
 
-},{}],6:[function(require,module,exports){
-var Parser = require("./HTMLParser.js").parser;
+					var response = new ClassSet.response(query.rawRule, null, false);
+					var content = Templax.app.parse(query.key, query.value, false, this.pManager.get(query));
 
-if (window) window.js_htparser = Parser;
+					response.value = content;
 
-exports.parser = Parser;
-},{"./HTMLParser.js":3}]},{},[6]);
+					return response;
+				}
+			}, {
+				key: "templateInline",
+				value: function templateInline(query) {
+					if (!query.key) return null;
+
+					var response = new ClassSet.response(query.rawRule, "", false);
+					var templateMatch = Config.regex.extractArea(query, query.key).exec(query.template);
+
+					if (!templateMatch) return response;
+
+					if (!this.tManager.register(query.key, templateMatch[1])) return response;
+
+					response.replacement = templateMatch[0];
+
+					if (query.options.renderInline) response.value = Templax.app.parse(query.key, query.value);
+
+					return response;
+				}
+			}, {
+				key: "foreach",
+				value: function foreach(query) {
+					if (!query.key || !query.value || query.value && query.value.constructor !== Array) return null;
+
+					var response = new ClassSet.response(query.rawRule, "", false);
+					var foreachMatch = Config.regex.extractArea(query, query.key).exec(query.template);
+
+					if (!foreachMatch) return response;
+
+					response.replacement = foreachMatch[0];
+					var content = "";
+
+					query.value.forEach(function (currentMarkup) {
+						content += Templax.app.parse(new ClassSet.template(null, foreachMatch[1], query.rawRule.options, query.process.template), currentMarkup, false, query.process);
+					});
+
+					response.value = content;
+
+					return response;
+				}
+			}, {
+				key: "case",
+				value: function _case(query) {
+
+					if (!query.key) return null;
+
+					var response = new ClassSet.response(query.rawRule, "", false);
+					var caseMatch = Config.regex.extractArea(query, query.key).exec(query.template);
+
+					if (!caseMatch) return response;
+
+					response.replacement = caseMatch[0];
+
+					if (!query.value) return response;
+
+					response.value = Templax.app.parse(new ClassSet.template(null, caseMatch[1], query.options, query.process.template), query.value, false, query.process);
+
+					return response;
+				}
+			}, {
+				key: "if",
+				value: function _if(query) {
+
+					if (!query.key) return null;
+
+					var response = new ClassSet.response(query.rawRule, "");
+					var ifMatch = Config.regex.extractArea(query, query.key).exec(query.template);
+
+					if (!ifMatch) return response;
+
+					response.replacement = ifMatch[0];
+
+					if (!query.process.queryMarkup[query.key]) return response;
+
+					response.value = Templax.app.parse(new ClassSet.template(null, ifMatch[1], query.options, query.process.template), query.commandValue || {}, false, query.process);
+
+					return response;
+				}
+			}, {
+				key: "debug",
+				value: function debug(query) {
+					var response = new ClassSet.response(query.rawRule, "no data found", false);
+
+					response.value = "Currently not implemented!";
+
+					return response;
+				}
+			}]);
+
+			return RequestParserClass;
+		}())();
+		exports.requestParser = RequestParser;
+	}, { "./ClassSet.js": 1, "./Configuration.js": 2, "./ProcessManager.js": 3, "./TemplateManager.js": 6, "./Templax.js": 7 }], 5: [function (require, module, exports) {
+
+		var Config = require("./Configuration.js");
+		var ClassSet = require("./ClassSet.js");
+
+		var RuleParser = new (function () {
+			function RuleParser() {
+				_classCallCheck(this, RuleParser);
+
+				this.ruleIterator = 0;
+			}
+
+			_createClass(RuleParser, [{
+				key: "parse",
+				value: function parse(process, rawRule) {
+					var rule = new ClassSet.rule(++this.ruleIterator, rawRule);
+
+					rule.request = this._extractRulePiece(rawRule, Config.regex.extractRequest())[1] || null;
+					rule.key = this._extractRulePiece(rawRule, Config.regex.extractKey())[1] || null;
+
+					var primeKey = rule.key || rule.request;
+					var queryMarkup = process.queryMarkup;
+					var requestValue = queryMarkup[primeKey];
+					var customOptions = {};
+
+					if (requestValue && requestValue.constructor === Object) {
+						if (requestValue["_options"] && requestValue["_options"].constructor === Object) customOptions = requestValue["_options"];
+
+						if (requestValue["value"] && (requestValue["value"].constructor !== Object || requestValue["value"].constructor !== Array)) requestValue = requestValue["value"];
+					}
+
+					rule.value = requestValue;
+					rule.commandValue = queryMarkup[rule.request + "-" + rule.key];
+
+					rule.options = this._resolveObjectFunctions(Object.assign({}, Config.parsing.optionSets.default, Config.parsing.optionSets[rule.request] || {}, customOptions));
+
+					return rule;
+				}
+			}, {
+				key: "_extractRulePiece",
+				value: function _extractRulePiece(rawRule, regex) {
+
+					if (!rawRule || !regex || rawRule.constructor !== String || regex.constructor !== RegExp) return [];
+
+					var match = regex.exec(rawRule);
+					var results = [];
+
+					if (!match) return results;
+
+					var _iteratorNormalCompletion = true;
+					var _didIteratorError = false;
+					var _iteratorError = undefined;
+
+					try {
+						for (var _iterator = match[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+							var item = _step.value;
+
+							results.push(item);
+						}
+					} catch (err) {
+						_didIteratorError = true;
+						_iteratorError = err;
+					} finally {
+						try {
+							if (!_iteratorNormalCompletion && _iterator.return) {
+								_iterator.return();
+							}
+						} finally {
+							if (_didIteratorError) {
+								throw _iteratorError;
+							}
+						}
+					}
+
+					return results;
+				}
+			}, {
+				key: "_resolveObjectFunctions",
+				value: function _resolveObjectFunctions(values) {
+
+					if (!values || values && values.constructor === Array) return null;
+
+					if (values.constructor !== Object) values = { "__value": values };
+
+					for (var index in values) {
+						var item = values[index];
+						if (item && item.constructor === Function) values[index] = item();
+					}
+
+					return values["__value"] || values;
+				}
+			}]);
+
+			return RuleParser;
+		}())();
+		exports.ruleParser = RuleParser;
+	}, { "./ClassSet.js": 1, "./Configuration.js": 2 }], 6: [function (require, module, exports) {
+
+		var ClassSet = require("./ClassSet.js");
+
+		var TemplateManager = new (function () {
+			function TemplateManagerClass() {
+				_classCallCheck(this, TemplateManagerClass);
+
+				this.templates = new Map();
+
+				this._loadFromDOM();
+			}
+
+			_createClass(TemplateManagerClass, [{
+				key: "_loadFromDOM",
+				value: function _loadFromDOM() {
+
+					var raw = document.querySelector("template#tx-templates");
+
+					if (raw) {
+						var _iteratorNormalCompletion2 = true;
+						var _didIteratorError2 = false;
+						var _iteratorError2 = undefined;
+
+						try {
+							for (var _iterator2 = raw.content.children[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+								var elm = _step2.value;
+
+								if (!this.register(elm.id, elm.innerHTML)) console.log("HTParser: registering template %s failed", elm.id);
+							}
+						} catch (err) {
+							_didIteratorError2 = true;
+							_iteratorError2 = err;
+						} finally {
+							try {
+								if (!_iteratorNormalCompletion2 && _iterator2.return) {
+									_iterator2.return();
+								}
+							} finally {
+								if (_didIteratorError2) {
+									throw _iteratorError2;
+								}
+							}
+						}
+					}
+
+					return true;
+				}
+			}, {
+				key: "register",
+				value: function register(id, template) {
+
+					if (!id || id && id.constructor !== String || !template || template.constructor !== String) return console.log("HTParser: invalid values for template registration: %s", id);else if (this.templates.has(id)) return console.log("HTParser: duplicated template found: '%s'", id);
+
+					var result = this.templates.set(id, new ClassSet.template(id, template.replace(/\s{2,}/g, "")));
+
+					return result ? result.size : false;
+				}
+			}, {
+				key: "get",
+				value: function get(id) {
+					var all = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+					return all ? this.templates.values() : this.templates.get(id);
+				}
+			}, {
+				key: "has",
+				value: function has(id) {
+					return this.templates.has(id);
+				}
+			}, {
+				key: "setOptions",
+				value: function setOptions(id, definition, value) {
+
+					if (!this.hasTemplate(id)) return false;
+
+					if (!definition && !value) this.getTemplate(id).options = {};else if (definition.constructor === Object) this.getTemplate(id).options = definition;else if (definition.constructor === String) this.getTemplate(id).options[definition] = value;else return false;
+
+					return true;
+				}
+			}, {
+				key: "setMarkup",
+				value: function setMarkup(id, definition, value) {
+
+					if (!this.templates.has(id)) return false;
+
+					if (!definition && !value) this.getTemplate(id).markup = {};else if (definition.constructor === Object) this.getTemplate(id).markup = definition;else if (definition.constructor === String) this.getTemplate(id).markup[definition] = value;else return false;
+
+					return true;
+				}
+			}]);
+
+			return TemplateManagerClass;
+		}())();
+		exports.templateManager = TemplateManager;
+	}, { "./ClassSet.js": 1 }], 7: [function (require, module, exports) {
+
+		var Config = require("./Configuration.js");
+		var ClassSet = require("./ClassSet.js");
+
+		var Templax = new (function () {
+			function TemplaxClass() {
+				_classCallCheck(this, TemplaxClass);
+
+				this.tManager = require("./TemplateManager.js").templateManager;
+				this.pManager = require("./ProcessManager.js").processManager;
+				this.rqParser = require("./RequestParser.js").requestParser;
+				this.rlParser = require("./RuleParser.js").ruleParser;
+			}
+
+			_createClass(TemplaxClass, [{
+				key: "define",
+				value: function define(configs) {
+
+					if (!configs || configs.constructor !== Object) return false;
+
+					for (var _id in configs) {
+
+						var item = configs[_id];
+
+						if (item["markup"]) tManager.setMarkup(_id, item["markup"]);
+						if (item["options"]) tManager.setOptions(_id, item["options"]);
+					}
+
+					return true;
+				}
+			}, {
+				key: "parse",
+				value: function parse(id, markup, options) {
+					var parentProcess = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
+
+					var pSet = this._verifyParsingSet(id, markup, options);
+
+					if (!pSet.options.render || !pSet.template.valid) return "";
+
+					var content = this._processTemplate(pSet.template, pSet.markup, pSet.options, function (query) {
+
+						var response = this.rqParser.parse(query);
+						return response;
+					}, null, parentProcess);
+
+					return content;
+				}
+			}, {
+				key: "_verifyParsingSet",
+				value: function _verifyParsingSet(templateValue, markup, options) {
+					var parsingSet = {
+						"template": this.tManager.has(templateValue) ? this.tManager.get(templateValue) : templateValue && templateValue instanceof ClassSet.template ? templateValue : templateValue && templateValue.constructor === String ? new ClassSet.template(null, templateValue) : new ClassSet.template(null, null),
+						"markup": markup && markup.constructor == Object ? markup : {},
+						"options": options && options.constructor == Object ? Object.assign(Config.defaults.templateOptionSet, options) : Config.defaults.templateOptionSet
+					};
+
+					return parsingSet;
+				}
+			}, {
+				key: "_processTemplate",
+				value: function _processTemplate(template) {
+					var markup = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+					var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+					var _callback = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : null;
+
+					var _this = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : null;
+
+					var parentProcess = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : null;
+
+					var process = this.pManager.create(template, markup, options, parentProcess);
+					process.options = Object.assign({}, process.options, options);
+
+					var regExtractRule = Config.regex.extractRule();
+					var callback = _callback && _callback.constructor == Function ? _callback.bind(_this || this) : function () {
+						return null;
+					};
+					process.queryMarkup = Object.assign({}, this._buildBaseMarkup(process), template.markup, markup);
+
+					var rawRule = null;
+					var content = template.value;
+					var lastIterator = regExtractRule.lastIndex;
+					var postQueries = [];
+
+					while (rawRule = regExtractRule.exec(content)) {
+
+						var rule = this.rlParser.parse(process, rawRule[0]);
+						var query = new ClassSet.query(process, rule, content.substring(lastIterator), false);
+						process.currentQuery = query;
+
+						var response = this._reviewProcessResponse(process, callback(query));
+
+						if (response.postQuery) postQueries.push(response.postQuery);
+
+						regExtractRule.lastIndex += response.offset !== null ? Number(response.offset) : -(query.rawRule.length - response.value.length);
+
+						lastIterator = regExtractRule.lastIndex;
+
+						content = content.replace(response.replacement, response.value);
+					}
+
+					postQueries.forEach(function (postQuery) {
+
+						var response = callback(postQuery);
+						content = content.replace(response.replacement, response.value);
+					});
+
+					this.pManager.delete(process);
+
+					return content;
+				}
+			}, {
+				key: "_buildBaseMarkup",
+				value: function _buildBaseMarkup(process) {
+
+					if (!this.pManager.validate(process)) return {};
+
+					var base = {
+						"tx-template-id": process.template.id || process.isSubProcess ? process.template.id : process.template.tid + "-subtemplate"
+					};
+
+					return base;
+				}
+			}, {
+				key: "_reviewProcessResponse",
+				value: function _reviewProcessResponse(process, response) {
+
+					if (!response || !(response instanceof ClassSet.response)) return new ClassSet.response(process.currentQuery.rule, "", false);
+
+					if (!response.replacement || response.replacement.constructor !== String) response.replacement = process.currentQuery.rawRule;
+
+					if (!response.value || response.value.constructor !== String && response.value.constructor !== Function) response.value = String(response.value);
+
+					return response;
+				}
+			}, {
+				key: "templates",
+				get: function get() {
+					return this.tManager.get(null, true);
+				}
+			}]);
+
+			return TemplaxClass;
+		}())();
+		exports.app = Templax;
+	}, { "./ClassSet.js": 1, "./Configuration.js": 2, "./ProcessManager.js": 3, "./RequestParser.js": 4, "./RuleParser.js": 5, "./TemplateManager.js": 6 }], 8: [function (require, module, exports) {
+		var Templax = require("./Templax.js").parser;
+
+		if (window) window.templax = Templax;
+
+		exports.templax = Templax;
+	}, { "./Templax.js": 7 }] }, {}, [8]);
