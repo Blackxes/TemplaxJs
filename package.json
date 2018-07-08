@@ -1,6 +1,6 @@
 {
   "name": "templax",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "index.js",
   "scripts": {
     "dist_build": "browserify src/index.js -o dist/index.js",
@@ -31,7 +31,9 @@
   "homepage": "https://github.com/Blackxes/TemplaxJs#readme",
   "description": "javascript html template parser",
   "babel": {
-    "presets": ["env"],
+    "presets": [
+      "env"
+    ],
     "comments": false
   },
   "jshint": {
