@@ -3,9 +3,9 @@
   "version": "1.0.1",
   "main": "index.js",
   "scripts": {
-    "dist_build": "browserify src/index.js -o dist/index.js",
-    "dist_babel": "babel dist/index.js -o dist/index.js",
-    "dist_uglify": "uglifyjs -c toplevel,sequences=false dist/index.js -o dist/min.index.js",
+    "dist_build": "browserify dist.js -o Dist/app.js",
+    "dist_babel": "babel Dist/app.js -o Dist/app.js",
+    "dist_uglify": "uglifyjs Dist/app.js -o dist/min.app.js",
     "dist": "npm run dist_build && npm run dist_babel && npm run dist_uglify",
     "sandbox_build": "browserify test/index.js -o test/package.js",
     "sandbox_babel": "babel test/package.js -o test/package.js",

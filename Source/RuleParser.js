@@ -15,7 +15,7 @@ var ClassSet = require( "./ClassSet.js" );
 
 //_____________________________________________________________________________________________
 // rule parsing class
-var RuleParser = new class RuleParser {
+var RuleParser = new class RuleParserClass {
 
 	//_____________________________________________________________________________________________
 	constructor() {

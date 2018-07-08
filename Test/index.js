@@ -89,7 +89,7 @@ var parserTests = {
 
 performTests = function( ...givenTests ) {
 
-	let templax = require("../src/Templax.js").app;
+	// let templax = require("../Source/App.js");
 
 	for( let nb of givenTests) {
 
@@ -97,7 +97,7 @@ performTests = function( ...givenTests ) {
 
 		console.log("Current Test: %s | Markup: %o\n---", parserTests[ nb ], markups[parserTests[nb]] || "none given");
 
-		let result = templax.parse(
+		let result = window.templax.parse(
 			parserTests[ nb ],
 			markups[parserTests[ nb ]] || {}
 		);
@@ -110,6 +110,12 @@ performTests = function( ...givenTests ) {
 document.addEventListener("DOMContentLoaded", function() {
 
 	// let templax = require( "../src/Templax.js" ).app;
+
+
+
+	// console.log(window.templax);
+
+	// return true;
 
 	// define test template
 	performTests( 8 );

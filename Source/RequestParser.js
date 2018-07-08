@@ -14,7 +14,7 @@
 // includes
 var Config = require("./Configuration.js");
 var ClassSet = require("./ClassSet.js");
-var Templax = require("./Templax.js");
+var Templax = require("./App.js");
 
 //_____________________________________________________________________________________________
 var RequestParser = new class RequestParserClass {
