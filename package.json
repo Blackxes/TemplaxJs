@@ -34,7 +34,7 @@
     "presets": ["env"],
     "comments": false
   },
-  "jshintrc": {
+  "jshint": {
     "esversion": 6
   }
 }

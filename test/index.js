@@ -109,7 +109,7 @@ performTests = function( ...givenTests ) {
 //_____________________________________________________________________________________________
 document.addEventListener("DOMContentLoaded", function() {
 
-	let templax = require( "../src/Templax.js" ).app;
+	// let templax = require( "../src/Templax.js" ).app;
 
 	// define test template
 	performTests( 8 );

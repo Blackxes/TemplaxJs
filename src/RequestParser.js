@@ -210,7 +210,7 @@ var RequestParser = new class RequestParserClass {
 
 		// Todo: finish "debug" command implementation!
 		let response = new ClassSet.response( query.rawRule, "no data found", false );
-
+		
 		response.value = "Currently not implemented!";
 
 		return response;
