@@ -1,0 +1,125 @@
+/*
+*	logfile css
+*
+*	Author: Alexander Bassov
+*	Email: blackxes@gmx.de
+*	Github: https://www.github.com/Blackxes
+*/
+
+/*-----------------------------------------------------------------------------------------------------------------------------------------------------*/
+/* encoding */
+@charset "UTF-8";
+
+/*-----------------------------------------------------------------------------------------------------------------------------------------------------*/
+/* fonts */
+@font-face {
+    font-family: "Quicksand-l";
+    src: url("../res/fonts/Quicksand-Light.otf");
+}
+
+/*-----------------------------------------------------------------------------------------------------------------------------------------------------*/
+/* reset */
+*, *:empty { margin: 0; padding: 0; }
+
+/* general container */
+html, body { top: 0; left: 0; width: 100%; height: 100%; position: absolute; font: 10px "Helvetica"; letter-spacing: 0.5px; background: transparent; }
+
+/* container */
+ul, li { margin: 0; padding: 0; list-style-type: none; }
+ul > li { width: 100%; padding-bottom: 0.5rem; }
+ul, li { overflow: hidden; }
+
+/* text */
+h1 { font-size: 3.5rem; }
+h2 { font-size: 3.05rem; }
+h3 { font-size: 2.63rem; }
+h4 { font-size: 2.3rem; }
+h5 { font-size: 2.05rem; }
+h6 { font-size: 1.9rem; }
+h1, h2, h3, h4, h5, h6 { margin-bottom: 0.6em; color: #000; font-weight: 400; }
+span, label, p { font-size: 12px; margin-bottom: 0.5rem; font-weight: 400; }
+li > p { margin-bottom: 0; padding: 0.5rem 0; }
+
+hr { margin-bottom: 10px; }
+[disabled] { user-select: none; pointer-events: none; filter: brightness(0.8); }
+
+/* images */
+img { padding: 0; width: 100%; height: auto; display: block; }
+
+/*-----------------------------------------------------------------------------------------------------------------------------------------------------*/
+/* formular */
+form * { font-size: 13px; font-family: inherit; }
+form .form-field { padding: 1rem 0.5rem; width: 100%; overflow: hidden; box-sizing: border-box; border-bottom: 0.1rem solid #ccc; }
+form .form-field > *, form .form-field div > * { margin: 0; padding: 0.7rem 0; float: left; width: 50%; box-sizing: border-box; }
+form .form-field > div { padding: 0; }
+
+/*  form value keeper hover */
+form input[type="submit"], form input, form select, form button, form .button { border: none; background: #d8d8d8; vertical-align: top; }
+form input[type="submit"], form select, form button, form .button { background: #ddd; border-bottom: 0.2rem solid #aaa; cursor: pointer; }
+form input[type="submit"] { margin: 0; padding: 0.6rem 1.2rem; float: right; width: 33.33%;  }
+
+form button, form div.button { padding: 0.6rem;  text-align: center; user-select: none; }
+form select { padding: 0.5rem 0; font-family: inherit; }
+form input.preview { user-select: none; pointer-events: none; }
+form input[type="text"] { padding: 0.7rem; }
+
+/* pesudo */
+form input[type="submit"]:hover, form select:hover, form button:hover, form div.button:hover { filter: brightness(1.05); }
+form button:focus, form input:focus, form select:focus { outline: none; }
+form[disabled] * input, form[disabled] * select, form[disabled] * .button { user-select: none; pointer-events: none; color: #eee; filter: brightness(0.8); 	}
+
+form button, form input[type="submit"] { cursor: pointer; }
+
+/*-----------------------------------------------------------------------------------------------------------------------------------------------------*/
+/* spacing */
+.col-1, .col-2, .col-3, .col-4, .col-5, .col-6, .col-7, .col-8, .col-9, .col-10, .col-12, .col-12 { width: 100%; }
+.col-1 { max-width: 8.33%; } .col-2 { max-width: 16.66%; } .col-3 { max-width: 25%; }
+.col-4 { max-width: 33.33%; } .col-5 { max-width: 41.67%; } .col-6 { max-width: 50%; }
+.col-7 { max-width: 58.33%; } .col-8 { max-width: 66.66%; } .col-9 { max-width: 75%; }
+.col-10 { max-width: 83.33%; } .col-11 { max-width: 91.66%; } .col-12 { max-width: 100%; }
+
+.row, .row-r, .row-clean, .row-full { margin: 0; width: 100%; box-sizing: border-box; overflow: hidden; }
+.row > *, .row-r > *, .row-clean > *, .row-full > * { padding-right: 0.5rem; float: left; box-sizing: border-box; }
+.row > *:last-child { padding-right: 0; }
+.row-clean > * { padding: 0; }
+.row-r > * { float: right; }
+
+.list > *:last-child { padding-bottom: 0; }
+
+.center { text-align: center; }
+.hide { display: none; }
+
+/* a container provides spacing for the children */
+.container { margin: 0 0 1rem; padding: 0; }
+.container:not(form) > * { margin-bottom: 0.5rem; padding: 0 0.5rem; }
+.container > *:last-child { margin: 0; }
+
+/* the box is therefore to provide container children to stand out width spacing and border / eg. set the background rule */
+.box { margin: 0; padding: 0.5rem; border-bottom: 1px solid #ccc; }
+.box > * { margin: 0; padding: 0.5rem; }
+
+/* templax */
+[tx-callpage], [tx-update] { cursor: pointer; }
+
+
+/* main container */
+#app { margin-top: 45px; }
+/* #app > * { margin: 0 auto; padding: 0; } */
+#footer { bottom: 0; position: absolute; }
+#header, #content, #footer { margin-bottom: 1rem; }
+
+/*-----------------------------------------------------------------------------------------------------------------------------------------------------*/
+/* customize */
+body { background: #111621; font-family: "consolas"; }
+h1 { text-align: center; }
+h1, h3, p { color: #ddd; }
+h3 { font-size: 16px; color: #999; }
+
+.menu .menu-item { padding: 0.3rem 0.5rem; margin-right: 0.5rem; width: initial; background: #cddcff; }
+.menu .menu-item > * { margin: 0; display: inline-block; }
+
+#app { margin: 100px auto; max-width: 800px; width: 100%; }
+#header { margin: 40px auto 30px; }
+#content { margin: 0 auto; }
+
+.test-block { padding: 10px 5px; border-bottom: 2px solid #444; }

@@ -1,0 +1,40 @@
+{
+  "name": "templax",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dist_build": "browserify src/index.js -o dist/index.js",
+    "dist_babel": "babel dist/index.js -o dist/index.js",
+    "dist_uglify": "uglifyjs -c toplevel,sequences=false dist/index.js -o dist/min.index.js",
+    "dist": "npm run dist_build && npm run dist_babel && npm run dist_uglify",
+    "sandbox_build": "browserify test/index.js -o test/package.js",
+    "sandbox_babel": "babel test/package.js -o test/package.js",
+    "sandbox": "npm run sandbox_build && npm run sandbox_babel",
+    "watch": "watchify test/index.js -o test/package.js"
+  },
+  "author": "Alexander Bassov",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-env": "^1.7.0",
+    "browserify": "^16.2.2",
+    "watchify": "^3.11.0",
+    "uglify-js": "^3.4.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Blackxes/TemplaxJs.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Blackxes/TemplaxJs/issues"
+  },
+  "homepage": "https://github.com/Blackxes/TemplaxJs#readme",
+  "description": "javascript html template parser",
+  "babel": {
+    "presets": ["env"],
+    "comments": false
+  },
+  "jshintrc": {
+    "esversion": 6
+  }
+}

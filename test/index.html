@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+	<meta name="author" content="Alexander Bassov">
+
+	<title>Templax</title>
+	
+	<link rel="stylesheet" type="text/css" href="./main.css">
+</head>
+<body>
+
+	<div id="app"></div>
+
+	<template id="tx-templates">
+
+		<!-- basic marker functionality -->
+		<template id="test-basic-marker-functionality">
+			<h3>Test: {{ tx-template-id }}</h3>
+			<p>{{ first-name }} {{ last-name }}</p>
+			<p>{{ email }}</p>
+		</template>
+
+		<!-- base templates -->
+		<template id="base-template">
+			<p>Base Template</p>
+		</template>
+
+		<!-- testing template inline declaration -->
+		<template id="test-template-inline-declaration">
+			{{ templateInline: inline-template }}
+				<p>template inline declaration</p>
+			{{ templateInline end: inline-template }}
+		</template>
+
+		<!-- testing template place -->
+		<template id="test-template-placeholder">
+			<h3>Test: "{{ tx-template-id }}"</h3>
+			{{ template: test-placeholder-template }}
+		</template>
+
+		<!-- placeholder template for testing template placeholder -->
+		<template id="test-placeholder-template">
+			<p>Placeholder Template</hp>
+		</template>
+
+		<!-- testing post template definition -->
+		<template id="test-post-inline-template-definition">
+			<h3>Test: "{{ tx-template-id }}"</h3>
+			{{ template: post-template }}
+
+			{{ templateInline: post-template }}
+				<p>post inline template declaration</p>
+			{{ templateInline end: post-template }}
+		</template>
+
+		<!-- testing foreach -->
+		<template id="test-foreach">
+			<h3>Test: "{{ tx-template-id }}"</h3>
+			<ul>
+				{{ foreach: fruits }}
+				<li><p>{{ fruit }} {{ tx-template-id }}</p></li>
+				{{ foreach end: fruits }}
+			</ul>
+		</template>
+
+		<!-- testing failure marker and commands -->
+		<template id="test-invalid-rules">
+			<h3>Test: {{ tx-template-id }}</h3>
+
+			<div class="invalid-marker">
+				<p>Invalid Marker</p>
+				<span>{{ }}{{}}</span>
+			</div>
+
+			<div class="invalid-rule-no-request">
+				<p>Invalid Rule (no request)</p>
+				<span>{{ : key }}</span>
+			</div>
+
+			<div class="invalid-rule-invalid-command">
+				<p>Invalid Rule (invalid command)</p>
+				<span>{{ request: key }}</span>
+			</div>
+		</template>
+
+		<!-- testing case command -->
+		<template id="test-case-command">
+			<h3>Test: {{ tx-template-id }}</h3>
+			{{ case: login }}
+				<div><p>User login formular</p></div>
+			{{ case end: login }}
+			{{ case: logout }}
+				<div><p>User logout formular</p></div>
+			{{ case end: logout }}
+		</template>
+
+		<!-- testing the inner if command -->
+		<template id="test-if-command">
+			<h3>Test: {{ tx-template-id }}</h3>
+
+			<p>Success value: {{ health }}</p>
+			<p>Fail value: {{ damage }}</p>
+
+			<p>Regular test: should succeed</p>
+			{{ if: health }}
+				<p>health: {{ damage }}</p>
+				<p>armor: {{ armor }}</p>
+			{{ if end: health }}
+
+			<p>Failure test: should fail</p>
+			{{ if: damage }}
+				<p>Tower: {{ tower }}</p>
+				<p>Type: {{ type }}</p>
+			{{ if end: damage }}
+		</template>
+		
+	</template>
+	
+	<script src="./package.js"></script>
+</body>
