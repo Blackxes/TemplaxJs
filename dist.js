@@ -1,1 +1,1 @@
-if ( window ) window.templax = (require( "./Source/App.js" )).app;
+if ( window ) window.templax = require( "./Source/App.js" ).app;

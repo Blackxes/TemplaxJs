@@ -1,1 +1,1 @@
-exports.app = require("./Source/App.js");
+exports.app = require("./Source/App.js").app;

@@ -109,14 +109,6 @@ performTests = function( ...givenTests ) {
 //_____________________________________________________________________________________________
 document.addEventListener("DOMContentLoaded", function() {
 
-	// let templax = require( "../src/Templax.js" ).app;
-
-
-
-	// console.log(window.templax);
-
-	// return true;
-
 	// define test template
 	performTests( 8 );
 
