@@ -47,8 +47,8 @@ var Templax = new class TemplaxClass {
 
 			let item = configs[id];
 
-			if ( item["markup"] ) tManager.setMarkup( id, item["markup"] );
-			if ( item["options"] ) tManager.setOptions( id, item["options"] );
+			if ( item["markup"] ) this.tManager.setMarkup( id, item["markup"] );
+			if ( item["options"] ) this.tManager.setOptions( id, item["options"] );
 		}
 
 		return true;
