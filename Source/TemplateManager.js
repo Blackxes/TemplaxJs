@@ -111,13 +111,13 @@ var TemplateManager = new class TemplateManagerClass {
 			return false;
 		
 		if ( !definition && !value )
-			this.getTemplate( id ).options = {};
+			this.get( id ).options = {};
 		
 		else if ( definition.constructor === Object )
-			this.getTemplate( id ).options = definition;
+			this.get( id ).options = definition;
 
 		else if ( definition.constructor === String )
-			this.getTemplate( id ).options[definition] = value;
+			this.get( id ).options[definition] = value;
 		
 		else
 			return false;
@@ -143,13 +143,13 @@ var TemplateManager = new class TemplateManagerClass {
 			return false;
 
 		if ( !definition && !value )
-			this.getTemplate( id ).markup = {};
+			this.get( id ).markup = {};
 		
 		else if ( definition.constructor === Object )
-			this.getTemplate( id ).markup = definition;
+			this.get( id ).markup = definition;
 		
 		else if ( definition.constructor === String )
-			this.getTemplate( id ).markup[definition] = value;
+			this.get( id ).markup[definition] = value;
 		
 		else
 			return false;
